@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OC Social — Mis OCs</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body data-pagina="ocs">
+
+  <div class="app-layout">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 80 80" width="36" height="36" fill="none">
+          <circle cx="28" cy="22" r="14" fill="var(--azul)"/>
+          <circle cx="52" cy="22" r="14" fill="var(--azul-claro)"/>
+          <ellipse cx="28" cy="58" rx="22" ry="14" fill="var(--azul)"/>
+          <ellipse cx="52" cy="58" rx="22" ry="14" fill="var(--azul-claro)" opacity="0.7"/>
+        </svg>
+      </div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="lobby.html">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.69l-9 7.6V21h6v-6h6v6h6V9.29L12 1.69z"/></svg>
+          <span class="nav-label">Inicio</span>
+        </a>
+        <a class="nav-item activo" href="ocs.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+          <span class="nav-label">Mis OCs</span>
+        </a>
+        <a class="nav-item" href="publicar.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          <span class="nav-label">Publicar</span>
+        </a>
+        <a class="nav-item nav-admin" id="nav-admin" href="admin.html" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3 6.5L22 9.3l-5 4.9 1.2 6.9L12 18l-6.2 3.1L7 14.2 2 9.3l7-.8z"/>
+          </svg>
+          <span class="nav-label">Admin</span>
+        </a>
+        <button class="nav-item nav-danger" onclick="cerrarSesion()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+          </svg>
+          <span class="nav-label">Salir</span>
+        </button>
+      </nav>
+      <div class="sidebar-usuario">
+        <div class="sidebar-usuario-avatar">
+          <svg viewBox="0 0 24 24" fill="var(--texto-secundario)" width="40" height="40">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+        </div>
+        <div class="sidebar-usuario-info">
+          <div class="sidebar-usuario-nombre" id="nav-nombre">—</div>
+          <div class="sidebar-usuario-rol" id="nav-rol">usuario</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── FEED ── -->
+    <main class="feed">
+      <div class="feed-header">
+        <h2>Mis OCs</h2>
+        <button class="btn-primario" style="padding:8px 16px;font-size:14px" onclick="abrirModalCrear()">
+          + Nuevo OC
+        </button>
+      </div>
+      <div id="lista-ocs">
+        <div class="cargando"><div class="spinner"></div></div>
+      </div>
+    </main>
+
+    <!-- ── ASIDE ── -->
+    <aside class="aside-panel">
+      <div style="padding-top:12px">
+        <div style="background:var(--bg-secundario);border:1px solid var(--borde);border-radius:12px;padding:16px">
+          <h3 style="font-size:18px;font-weight:700;margin-bottom:8px">¿Qué son los OCs?</h3>
+          <p style="color:var(--texto-secundario);font-size:14px;line-height:1.6">
+            Los OCs (Original Characters) son tus personajes originales. Crea tantos como quieras y úsalos para publicar, comentar y dar likes en el feed.
+          </p>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ── MODAL: Crear / Editar OC ── -->
+  <div id="modal-oc" class="modal-overlay" style="display:none" onclick="cerrarModalOc(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="modal-oc-titulo">Nuevo OC</h3>
+        <button class="btn-icono" onclick="cerrarModalOc()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Foto de perfil del OC -->
+      <div style="display:flex;justify-content:center;margin-bottom:20px">
+        <div class="img-picker-preview" onclick="document.getElementById('input-foto-oc').click()"
+             title="Haz clic para cambiar la foto">
+          <img id="preview-foto-oc"
+               src="data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='%2371767b' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 20c0-4 3.6-7 8-7s8 3 8 7'/%3E%3C/svg%3E"
+               alt="Foto del OC" style="width:100%;height:100%;object-fit:cover" />
+        </div>
+        <input type="file" id="input-foto-oc" accept="image/*" style="display:none"
+               onchange="previsualizarFotoOc(this)" />
+      </div>
+      <p style="text-align:center;color:var(--texto-secundario);font-size:13px;margin-top:-12px;margin-bottom:16px">
+        Haz clic en el círculo para subir una foto (300×300 px)
+      </p>
+
+      <div class="campo-grupo">
+        <label class="campo-label" for="input-oc-nombre">Nombre *</label>
+        <input type="text" id="input-oc-nombre" class="campo-input"
+               placeholder="Nombre del OC" maxlength="50" />
+      </div>
+
+      <div class="campo-grupo">
+        <label class="campo-label" for="input-oc-apellido">Apellido</label>
+        <input type="text" id="input-oc-apellido" class="campo-input"
+               placeholder="Apellido del OC (opcional)" maxlength="50" />
+      </div>
+
+      <div class="campo-grupo">
+        <label class="campo-label" for="input-oc-desc">Descripción</label>
+        <textarea id="input-oc-desc" class="campo-input-area"
+                  placeholder="Describe a tu OC…" maxlength="300" rows="3"></textarea>
+      </div>
+
+      <div id="modal-oc-error" style="color:var(--rojo);font-size:14px;margin-bottom:8px"></div>
+
+      <div class="modal-footer">
+        <button class="btn-secundario" onclick="cerrarModalOc()">Cancelar</button>
+        <button class="btn-primario" id="btn-guardar-oc" onclick="guardarOc()">
+          Guardar OC
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL: Confirmar eliminar ── -->
+  <div id="modal-confirmar" class="modal-overlay" style="display:none" onclick="cerrarModalConfirmar(event)">
+    <div class="modal-card" style="max-width:380px" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>¿Eliminar OC?</h3>
+      </div>
+      <p style="color:var(--texto-secundario);margin-bottom:8px">
+        Esta acción eliminará el OC y su foto permanentemente. Sus publicaciones y comentarios quedarán huérfanos.
+      </p>
+      <p id="confirmar-oc-nombre" style="font-weight:700;font-size:16px;margin-bottom:4px"></p>
+      <div class="modal-footer">
+        <button class="btn-secundario" onclick="cerrarModalConfirmar()">Cancelar</button>
+        <button class="btn-peligro" id="btn-confirmar-del" onclick="ejecutarEliminarOc()">
+          Sí, eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ocs.js"></script>
+</body>
+</html>
