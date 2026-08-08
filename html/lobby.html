@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OC Social — Inicio</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body data-pagina="lobby">
+
+  <div class="app-layout">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 80 80" width="36" height="36" fill="none">
+          <circle cx="28" cy="22" r="14" fill="var(--azul)"/>
+          <circle cx="52" cy="22" r="14" fill="var(--azul-claro)"/>
+          <ellipse cx="28" cy="58" rx="22" ry="14" fill="var(--azul)"/>
+          <ellipse cx="52" cy="58" rx="22" ry="14" fill="var(--azul-claro)" opacity="0.7"/>
+        </svg>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-item activo" href="lobby.html">
+          <!-- Inicio -->
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.69l-9 7.6V21h6v-6h6v6h6V9.29L12 1.69z"/></svg>
+          <span class="nav-label">Inicio</span>
+        </a>
+        <a class="nav-item" href="ocs.html">
+          <!-- Mis OCs -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+          <span class="nav-label">Mis OCs</span>
+        </a>
+        <a class="nav-item" href="publicar.html">
+          <!-- Publicar -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          <span class="nav-label">Publicar</span>
+        </a>
+        <a class="nav-item nav-admin" id="nav-admin" href="admin.html" style="display:none">
+          <!-- Admin -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3 6.5L22 9.3l-5 4.9 1.2 6.9L12 18l-6.2 3.1L7 14.2 2 9.3l7-.8z"/>
+          </svg>
+          <span class="nav-label">Admin</span>
+        </a>
+        <button class="nav-item nav-danger" onclick="cerrarSesion()">
+          <!-- Salir -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+          </svg>
+          <span class="nav-label">Salir</span>
+        </button>
+      </nav>
+
+      <!-- Usuario actual -->
+      <div class="sidebar-usuario">
+        <div class="sidebar-usuario-avatar">
+          <svg viewBox="0 0 24 24" fill="var(--texto-secundario)" width="40" height="40">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+        </div>
+        <div class="sidebar-usuario-info">
+          <div class="sidebar-usuario-nombre" id="nav-nombre">—</div>
+          <div class="sidebar-usuario-rol" id="nav-rol">usuario</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── FEED ── -->
+    <main class="feed">
+      <div class="feed-header">
+        <h2>Inicio</h2>
+        <button class="btn-icono" onclick="cargarFeed()" title="Actualizar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Timeline -->
+      <div id="feed-contenido">
+        <div class="cargando"><div class="spinner"></div></div>
+      </div>
+    </main>
+
+    <!-- ── ASIDE (panel derecho) ── -->
+    <aside class="aside-panel">
+      <div style="padding-top:12px">
+        <div style="background:var(--bg-secundario);border:1px solid var(--borde);border-radius:12px;padding:16px">
+          <h3 style="font-size:18px;font-weight:700;margin-bottom:12px">Bienvenido</h3>
+          <p style="color:var(--texto-secundario);font-size:14px;margin-bottom:16px">
+            Interactúa con las publicaciones de los personajes. Usa tus OCs para dar likes y comentar.
+          </p>
+          <a href="publicar.html" class="btn-primario" style="display:block;text-align:center">
+            Nueva publicación
+          </a>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ── OVERLAY: Selector de OC ── -->
+  <div id="selector-oc-overlay" class="selector-oc-overlay" style="display:none" onclick="cerrarSelectorOc(event)">
+    <div class="selector-oc-card" onclick="event.stopPropagation()">
+      <h3 id="selector-oc-titulo">Elige tu OC</h3>
+      <div id="selector-oc-lista" class="selector-oc-lista"></div>
+      <div style="margin-top:16px;text-align:right">
+        <button class="btn-secundario" onclick="cerrarSelectorOc()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL: Comentarios expandidos ── -->
+  <div id="modal-comentarios" class="modal-overlay" style="display:none" onclick="cerrarModalComentarios(event)">
+    <div class="modal-card" style="max-width:560px" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Comentarios</h3>
+        <button class="btn-icono" onclick="cerrarModalComentarios()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div id="modal-comentarios-contenido"></div>
+    </div>
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/lobby.js"></script>
+</body>
+</html>
