@@ -2,7 +2,7 @@
 // ⚠️ ÚNICO ARCHIVO QUE DEBES EDITAR: pon la URL de tu Cloudflare Worker aquí
 
 const CONFIG = {
-  WORKER_URL: "https://oc-social-worker.TU_SUBDOMINIO.workers.dev",
+  WORKER_URL: "https://oc-social-worker.tsuyuasuiuwu1173.workers.dev",
   // Sin slash final
 };
 
