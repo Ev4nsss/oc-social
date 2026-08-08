@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OC Social — Nueva publicación</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body data-pagina="publicar">
+
+  <div class="app-layout">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 80 80" width="36" height="36" fill="none">
+          <circle cx="28" cy="22" r="14" fill="var(--azul)"/>
+          <circle cx="52" cy="22" r="14" fill="var(--azul-claro)"/>
+          <ellipse cx="28" cy="58" rx="22" ry="14" fill="var(--azul)"/>
+          <ellipse cx="52" cy="58" rx="22" ry="14" fill="var(--azul-claro)" opacity="0.7"/>
+        </svg>
+      </div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="lobby.html">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.69l-9 7.6V21h6v-6h6v6h6V9.29L12 1.69z"/></svg>
+          <span class="nav-label">Inicio</span>
+        </a>
+        <a class="nav-item" href="ocs.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+          <span class="nav-label">Mis OCs</span>
+        </a>
+        <a class="nav-item activo" href="publicar.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          <span class="nav-label">Publicar</span>
+        </a>
+        <a class="nav-item nav-admin" id="nav-admin" href="admin.html" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3 6.5L22 9.3l-5 4.9 1.2 6.9L12 18l-6.2 3.1L7 14.2 2 9.3l7-.8z"/>
+          </svg>
+          <span class="nav-label">Admin</span>
+        </a>
+        <button class="nav-item nav-danger" onclick="cerrarSesion()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+          </svg>
+          <span class="nav-label">Salir</span>
+        </button>
+      </nav>
+      <div class="sidebar-usuario">
+        <div class="sidebar-usuario-avatar">
+          <svg viewBox="0 0 24 24" fill="var(--texto-secundario)" width="40" height="40">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+        </div>
+        <div class="sidebar-usuario-info">
+          <div class="sidebar-usuario-nombre" id="nav-nombre">—</div>
+          <div class="sidebar-usuario-rol" id="nav-rol">usuario</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── FEED ── -->
+    <main class="feed">
+      <div class="feed-header">
+        <button class="btn-volver" onclick="history.back()" title="Volver">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
+        </button>
+        <h2>Nueva publicación</h2>
+      </div>
+
+      <div style="padding:16px">
+
+        <!-- Sin OCs: advertencia -->
+        <div id="aviso-sin-ocs" style="display:none">
+          <div class="estado-vacio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+            </svg>
+            <h3>No tienes OCs</h3>
+            <p>Necesitas al menos un OC para publicar. Crea uno primero.</p>
+            <a href="ocs.html" class="btn-primario">Crear mi primer OC</a>
+          </div>
+        </div>
+
+        <!-- Formulario de publicación -->
+        <div id="form-publicar" style="display:none">
+
+          <!-- Selector de OC -->
+          <div class="campo-grupo">
+            <label class="campo-label">Publicar como *</label>
+            <div id="selector-oc-pub" style="display:flex;flex-direction:column;gap:8px">
+              <div class="cargando"><div class="spinner"></div></div>
+            </div>
+          </div>
+
+          <!-- Título -->
+          <div class="campo-grupo">
+            <label class="campo-label" for="input-titulo">Título *</label>
+            <input type="text" id="input-titulo" class="campo-input"
+                   placeholder="Título de la publicación" maxlength="100" />
+            <span id="contador-titulo" style="font-size:12px;color:var(--texto-secundario);text-align:right">0/100</span>
+          </div>
+
+          <!-- Texto -->
+          <div class="campo-grupo">
+            <label class="campo-label" for="input-texto">Contenido</label>
+            <textarea id="input-texto" class="campo-input-area"
+                      placeholder="¿Qué quiere decir tu OC?" maxlength="1000" rows="5"
+                      oninput="actualizarContadorTexto(this)"></textarea>
+            <span id="contador-texto" style="font-size:12px;color:var(--texto-secundario);text-align:right">0/1000</span>
+          </div>
+
+          <!-- Imágenes -->
+          <div class="campo-grupo">
+            <label class="campo-label">Imágenes (máximo 2, 400×400 px)</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+
+              <!-- Imagen 1 -->
+              <div>
+                <div class="img-picker-preview-pub" id="preview-img1-wrapper"
+                     onclick="document.getElementById('input-img1').click()" title="Añadir imagen 1">
+                  <img id="preview-img1" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover" />
+                  <div id="placeholder-img1" style="display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--texto-secundario)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    <span style="font-size:13px">Imagen 1</span>
+                  </div>
+                </div>
+                <input type="file" id="input-img1" accept="image/*" style="display:none"
+                       onchange="previsualizarImagen(this, 1)" />
+                <button class="btn-secundario" style="width:100%;margin-top:6px;padding:6px;font-size:13px;display:none"
+                        id="btn-quitar-img1" onclick="quitarImagen(1)">
+                  Quitar imagen 1
+                </button>
+              </div>
+
+              <!-- Imagen 2 -->
+              <div>
+                <div class="img-picker-preview-pub" id="preview-img2-wrapper"
+                     onclick="document.getElementById('input-img2').click()" title="Añadir imagen 2">
+                  <img id="preview-img2" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover" />
+                  <div id="placeholder-img2" style="display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--texto-secundario)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    <span style="font-size:13px">Imagen 2</span>
+                  </div>
+                </div>
+                <input type="file" id="input-img2" accept="image/*" style="display:none"
+                       onchange="previsualizarImagen(this, 2)" />
+                <button class="btn-secundario" style="width:100%;margin-top:6px;padding:6px;font-size:13px;display:none"
+                        id="btn-quitar-img2" onclick="quitarImagen(2)">
+                  Quitar imagen 2
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Error y botón enviar -->
+          <div id="pub-error" style="color:var(--rojo);font-size:14px;margin-bottom:12px"></div>
+
+          <div style="display:flex;justify-content:flex-end;gap:10px">
+            <button class="btn-secundario" onclick="history.back()">Cancelar</button>
+            <button class="btn-primario" id="btn-publicar" onclick="publicar()">
+              Publicar
+            </button>
+          </div>
+
+        </div><!-- /form-publicar -->
+
+        <!-- Cargando inicial -->
+        <div id="cargando-inicial" class="cargando">
+          <div class="spinner"></div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ── ASIDE ── -->
+    <aside class="aside-panel">
+      <div style="padding-top:12px">
+        <div style="background:var(--bg-secundario);border:1px solid var(--borde);border-radius:12px;padding:16px">
+          <h3 style="font-size:18px;font-weight:700;margin-bottom:8px">Consejos</h3>
+          <ul style="color:var(--texto-secundario);font-size:14px;line-height:1.8;padding-left:16px">
+            <li>El título es obligatorio.</li>
+            <li>Puedes agregar hasta 2 imágenes.</li>
+            <li>Las imágenes se comprimen automáticamente a 400×400 px.</li>
+            <li>Elige qué OC quieres que firme la publicación.</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/publicar.js"></script>
+</body>
+</html>
