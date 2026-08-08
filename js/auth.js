@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function inicializarAuth() {
-  // Si estamos en la página de login y ya hay sesión, redirigir al lobby
   const esLogin = document.body.dataset.pagina === "login";
   const token = localStorage.getItem("oc_token");
 
@@ -16,7 +15,6 @@ function inicializarAuth() {
     return;
   }
 
-  // En todas las demás páginas, verificar que haya sesión
   if (!token) {
     window.location.href = "/index.html";
     return;
@@ -27,14 +25,12 @@ function inicializarAuth() {
 async function verificarSesionYRedirigir(redirigirSiValido = true) {
   try {
     const data = await API.get("/auth/verify");
-    // Actualizar datos de sesión en localStorage
     localStorage.setItem("oc_usuario", data.nombre);
     localStorage.setItem("oc_rol", data.rol);
 
     if (redirigirSiValido) {
       window.location.href = "/html/lobby.html";
     } else {
-      // Actualizar UI con datos del usuario
       actualizarNavUsuario(data.nombre, data.rol);
     }
   } catch (err) {
@@ -52,7 +48,8 @@ function configurarFormLogin() {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const nombre = document.getElementById("input-nombre").value.trim();
-    const contraseña = document.getElementById("input-pass").value;
+    // ¡Corregido! También quitamos espacios a la contraseña
+    const contraseña = document.getElementById("input-pass").value.trim();
     const btnLogin = document.getElementById("btn-login");
     const errorDiv = document.getElementById("login-error");
 
@@ -80,11 +77,9 @@ function configurarFormLogin() {
 }
 
 function actualizarNavUsuario(nombre, rol) {
-  // Actualizar nombre en la barra lateral
   const navNombre = document.getElementById("nav-nombre");
   if (navNombre) navNombre.textContent = nombre;
 
-  // Mostrar/ocultar panel admin
   const navAdmin = document.getElementById("nav-admin");
   if (navAdmin) navAdmin.style.display = rol === "admin" ? "flex" : "none";
 }
@@ -94,5 +89,4 @@ function cerrarSesion() {
   window.location.href = "/index.html";
 }
 
-// Exponer globalmente para uso desde HTML
 window.cerrarSesion = cerrarSesion;
