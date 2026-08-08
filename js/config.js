@@ -3,7 +3,6 @@
 
 const CONFIG = {
   WORKER_URL: "https://oc-social-worker.tsuyuasuiuwu1173.workers.dev",
-  // Sin slash final
 };
 
 // API helper — wrapper sobre fetch con auth automática
