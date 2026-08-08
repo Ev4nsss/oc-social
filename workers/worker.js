@@ -111,21 +111,17 @@ async function escribirJSON(ruta, datos, mensaje, env, sha = null) {
 
 // ============================================================
 // REDIMENSIONAMIENTO DE IMÁGENES (usando OffscreenCanvas si disponible)
-// Cloudflare Workers soporta OffscreenCanvas limitado; usamos canvas API
 // ============================================================
 
 async function redimensionarImagen(base64Input, maxW, maxH) {
-  // Decodificar base64 a ArrayBuffer
   const binaryStr = atob(base64Input.split(",").pop());
   const bytes = new Uint8Array(binaryStr.length);
   for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
   const blob = new Blob([bytes], { type: "image/jpeg" });
 
-  // Crear bitmap
   const bitmap = await createImageBitmap(blob);
   const { width, height } = bitmap;
 
-  // Calcular nuevas dimensiones manteniendo proporción
   let nw = maxW, nh = maxH;
   const ratio = width / height;
   if (width > height) { nh = Math.round(maxW / ratio); }
@@ -185,7 +181,12 @@ async function handleLogin(request, env) {
   const { datos: usuarios } = await leerJSON("usuarios.json", env);
   if (!usuarios) return respError("Error al leer usuarios", 500);
 
-  const usuario = usuarios.find(u => u.nombre === nombre && u.contraseña === contraseña);
+  // 🔥 CORRECCIÓN: recortar espacios en ambos lados antes de comparar
+  const usuario = usuarios.find(u =>
+    u.nombre.trim() === nombre.trim() &&
+    u.contraseña.trim() === contraseña.trim()
+  );
+
   if (!usuario) return respError("Credenciales incorrectas", 401);
   if (usuario.activo === false) return respError("Cuenta suspendida", 403);
 
@@ -213,7 +214,6 @@ async function handleVerify(request, env) {
 async function handleListarUsuarios(request, env, payload) {
   if (payload.rol !== "admin") return respError("Sin permisos", 403);
   const { datos } = await leerJSON("usuarios.json", env);
-  // No devolver contraseñas
   const seguros = (datos || []).map(({ contraseña: _, ...u }) => u);
   return respJson(seguros);
 }
@@ -230,7 +230,6 @@ async function handleCrearUsuario(request, env, payload) {
   const nuevo = { nombre, contraseña, rol: "usuario", activo: true };
   usuarios.push(nuevo);
 
-  // Crear carpeta del usuario con archivo placeholder
   await escribirJSON(
     `usuarios/${nombre}/PerfilesOcsDatos.json`, [], `Crear usuario ${nombre}`, env
   );
@@ -284,7 +283,7 @@ async function handleCrearOc(request, env, payload, nombreUsuario) {
     return respError("Sin permisos", 403);
 
   const body = await request.json();
-  const { nombre, apellido, descripcion, foto } = body; // foto en base64
+  const { nombre, apellido, descripcion, foto } = body;
   if (!nombre) return respError("El nombre del OC es requerido");
 
   const id = crypto.randomUUID();
@@ -321,7 +320,6 @@ async function handleEditarOc(request, env, payload, nombreUsuario, ocId) {
   if (body.foto) {
     const fotoRedim = await redimensionarImagen(body.foto, 300, 300);
     const rutaFoto = `usuarios/${nombreUsuario}/Fotos-Perfiles-ocs/${ocId}.jpg`;
-    // Obtener SHA de la foto existente si existe
     const fotoExistente = await githubGet(rutaFoto, env);
     await githubPut(rutaFoto, fotoRedim, `Update foto OC ${ocId}`, env, fotoExistente?.sha);
     ocs[idx].foto = rutaFoto;
@@ -340,7 +338,6 @@ async function handleEliminarOc(request, env, payload, nombreUsuario, ocId) {
   const oc = ocs.find(o => o.id === ocId);
   if (!oc) return respError("OC no encontrado", 404);
 
-  // Eliminar foto si existe
   if (oc.foto) {
     const fotoFile = await githubGet(oc.foto, env);
     if (fotoFile) await githubDelete(oc.foto, `Del foto OC ${ocId}`, fotoFile.sha, env);
@@ -357,7 +354,6 @@ async function handleEliminarOc(request, env, payload, nombreUsuario, ocId) {
 
 // GET /publicaciones — todas las publicaciones de todos los usuarios
 async function handleListarTodasPublicaciones(env) {
-  // Obtener lista de usuarios
   const { datos: usuarios } = await leerJSON("usuarios.json", env);
   if (!usuarios) return respJson([]);
 
@@ -366,7 +362,6 @@ async function handleListarTodasPublicaciones(env) {
     try {
       const { datos: pubs } = await leerJSON(`usuarios/${u.nombre}/PublicacionesDeOcsDatos.json`, env);
       if (pubs) {
-        // Enriquecer con datos del OC autor
         const { datos: ocs } = await leerJSON(`usuarios/${u.nombre}/PerfilesOcsDatos.json`, env);
         for (const pub of pubs) {
           const ocAutor = (ocs || []).find(o => o.id === pub.ocId);
@@ -378,11 +373,10 @@ async function handleListarTodasPublicaciones(env) {
         }
       }
     } catch {
-      // Si hay error en un usuario, continuar con los demás
+      // continuar con otros usuarios
     }
   }
 
-  // Ordenar por fecha descendente
   todasPubs.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
   return respJson(todasPubs);
 }
@@ -402,7 +396,6 @@ async function handleCrearPublicacion(request, env, payload, nombreUsuario) {
   const { ocId, titulo, texto, imagenes } = body;
   if (!ocId || !titulo) return respError("OC y título son requeridos");
 
-  // Verificar que el OC pertenece al usuario
   const { datos: ocs } = await leerJSON(`usuarios/${nombreUsuario}/PerfilesOcsDatos.json`, env);
   if (!ocs?.find(o => o.id === ocId)) return respError("OC no encontrado", 404);
 
@@ -410,7 +403,7 @@ async function handleCrearPublicacion(request, env, payload, nombreUsuario) {
   const rutasImagenes = [];
 
   if (imagenes && imagenes.length > 0) {
-    const limite = imagenes.slice(0, 2); // Máximo 2 imágenes
+    const limite = imagenes.slice(0, 2);
     for (let i = 0; i < limite.length; i++) {
       const imgRedim = await redimensionarImagen(limite[i], 400, 400);
       const ruta = `usuarios/${nombreUsuario}/Fotos-publicaciones/${id}_${i + 1}.jpg`;
@@ -447,7 +440,6 @@ async function handleEliminarPublicacion(request, env, payload, nombreUsuario, p
   const pub = pubs?.find(p => p.id === pubId);
   if (!pub) return respError("Publicación no encontrada", 404);
 
-  // Eliminar imágenes
   for (const imgRuta of pub.imagenes || []) {
     const imgFile = await githubGet(imgRuta, env);
     if (imgFile) await githubDelete(imgRuta, `Del img pub ${pubId}`, imgFile.sha, env);
@@ -464,10 +456,9 @@ async function handleEliminarPublicacion(request, env, payload, nombreUsuario, p
 
 // POST /likes/:usuarioPub/:pubId
 async function handleToggleLike(request, env, payload, usuarioPub, pubId) {
-  const { ocId } = await request.json(); // OC que da/quita like
+  const { ocId } = await request.json();
   if (!ocId) return respError("ocId requerido");
 
-  // Verificar que el OC pertenece al usuario autenticado
   const { datos: misOcs } = await leerJSON(`usuarios/${payload.nombre}/PerfilesOcsDatos.json`, env);
   if (!misOcs?.find(o => o.id === ocId)) return respError("OC no te pertenece", 403);
 
@@ -477,9 +468,9 @@ async function handleToggleLike(request, env, payload, usuarioPub, pubId) {
 
   const idx = pub.likes.indexOf(ocId);
   if (idx === -1) {
-    pub.likes.push(ocId); // Dar like
+    pub.likes.push(ocId);
   } else {
-    pub.likes.splice(idx, 1); // Quitar like
+    pub.likes.splice(idx, 1);
   }
 
   await escribirJSON(`usuarios/${usuarioPub}/PublicacionesDeOcsDatos.json`, pubs, `Like toggle ${pubId}`, env, sha);
@@ -495,7 +486,6 @@ async function handleAgregarComentario(request, env, payload, usuarioPub, pubId)
   const { ocId, texto } = await request.json();
   if (!ocId || !texto?.trim()) return respError("OC y texto requeridos");
 
-  // Verificar que el OC pertenece al usuario autenticado
   const { datos: misOcs } = await leerJSON(`usuarios/${payload.nombre}/PerfilesOcsDatos.json`, env);
   if (!misOcs?.find(o => o.id === ocId)) return respError("OC no te pertenece", 403);
 
@@ -525,7 +515,6 @@ async function handleEliminarComentario(request, env, payload, usuarioPub, pubId
   const coment = pub.comentarios.find(c => c.id === comentId);
   if (!coment) return respError("Comentario no encontrado", 404);
 
-  // Solo el autor del comentario o el admin pueden eliminarlo
   if (coment.ocUsuario !== payload.nombre && payload.rol !== "admin")
     return respError("Sin permisos", 403);
 
@@ -553,14 +542,13 @@ async function handleServirImagen(ruta, env) {
 
 export default {
   async fetch(request, env) {
-    // Preflight CORS
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
     }
 
     const url = new URL(request.url);
-    const path = url.pathname.replace(/\/$/, ""); // quitar slash final
-    const partes = path.split("/").filter(Boolean); // ["auth", "login"]
+    const path = url.pathname.replace(/\/$/, "");
+    const partes = path.split("/").filter(Boolean);
     const method = request.method;
 
     try {
@@ -572,7 +560,6 @@ export default {
 
       // ── IMÁGENES ──────────────────────────────────────────
       if (partes[0] === "img") {
-        // /img/usuarios/nombre/Fotos-.../archivo.jpg
         const rutaImagen = partes.slice(1).join("/");
         return handleServirImagen(rutaImagen, env);
       }
@@ -601,7 +588,7 @@ export default {
 
       // ── PUBLICACIONES ─────────────────────────────────────
       if (partes[0] === "publicaciones") {
-        if (!partes[1]) return handleListarTodasPublicaciones(env); // GET /publicaciones
+        if (!partes[1]) return handleListarTodasPublicaciones(env);
         const nombreUsuario = partes[1];
         if (method === "GET") return handleListarPublicaciones(env, nombreUsuario);
         if (method === "POST") return handleCrearPublicacion(request, env, payload, nombreUsuario);
