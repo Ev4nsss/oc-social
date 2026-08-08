@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OC Social — Panel Admin</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body data-pagina="admin">
+
+  <div class="app-layout">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 80 80" width="36" height="36" fill="none">
+          <circle cx="28" cy="22" r="14" fill="var(--azul)"/>
+          <circle cx="52" cy="22" r="14" fill="var(--azul-claro)"/>
+          <ellipse cx="28" cy="58" rx="22" ry="14" fill="var(--azul)"/>
+          <ellipse cx="52" cy="58" rx="22" ry="14" fill="var(--azul-claro)" opacity="0.7"/>
+        </svg>
+      </div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="lobby.html">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.69l-9 7.6V21h6v-6h6v6h6V9.29L12 1.69z"/></svg>
+          <span class="nav-label">Inicio</span>
+        </a>
+        <a class="nav-item" href="ocs.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+          <span class="nav-label">Mis OCs</span>
+        </a>
+        <a class="nav-item" href="publicar.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          <span class="nav-label">Publicar</span>
+        </a>
+        <a class="nav-item nav-admin activo" href="admin.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3 6.5L22 9.3l-5 4.9 1.2 6.9L12 18l-6.2 3.1L7 14.2 2 9.3l7-.8z"/>
+          </svg>
+          <span class="nav-label">Admin</span>
+        </a>
+        <button class="nav-item nav-danger" onclick="cerrarSesion()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+          </svg>
+          <span class="nav-label">Salir</span>
+        </button>
+      </nav>
+      <div class="sidebar-usuario">
+        <div class="sidebar-usuario-avatar">
+          <svg viewBox="0 0 24 24" fill="var(--texto-secundario)" width="40" height="40">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+        </div>
+        <div class="sidebar-usuario-info">
+          <div class="sidebar-usuario-nombre" id="nav-nombre">—</div>
+          <div class="sidebar-usuario-rol" id="nav-rol">admin</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── CONTENIDO ── -->
+    <main class="feed">
+      <div class="feed-header">
+        <h2>Administración</h2>
+      </div>
+
+      <div style="padding:16px">
+
+        <!-- Tabs: Usuarios / Nuevo usuario -->
+        <div class="tabs">
+          <button class="tab-btn activo" id="tab-lista" onclick="cambiarTab('lista')">Usuarios</button>
+          <button class="tab-btn" id="tab-nuevo" onclick="cambiarTab('nuevo')">+ Nuevo usuario</button>
+        </div>
+
+        <!-- Panel: Lista de usuarios -->
+        <div id="panel-lista">
+          <div id="lista-usuarios" style="margin-top:16px">
+            <div class="cargando"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+        <!-- Panel: Nuevo usuario -->
+        <div id="panel-nuevo" style="display:none; margin-top:16px">
+          <div class="campo-grupo">
+            <label class="campo-label" for="input-nuevo-nombre">Nombre de usuario</label>
+            <input type="text" id="input-nuevo-nombre" class="campo-input"
+                   placeholder="Nombre único" maxlength="50" />
+          </div>
+          <div class="campo-grupo">
+            <label class="campo-label" for="input-nuevo-pass">Contraseña</label>
+            <input type="text" id="input-nuevo-pass" class="campo-input"
+                   placeholder="Contraseña inicial" maxlength="100" />
+          </div>
+          <div id="error-nuevo" style="color:var(--rojo);font-size:14px;margin-bottom:12px"></div>
+          <button class="btn-primario" id="btn-crear-usuario" onclick="crearUsuario()">
+            Crear usuario
+          </button>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ── ASIDE ── -->
+    <aside class="aside-panel">
+      <div style="padding-top:12px">
+        <div style="background:var(--bg-secundario);border:1px solid var(--borde);border-radius:12px;padding:16px">
+          <h3 style="font-size:18px;font-weight:700;margin-bottom:8px">Opciones de admin</h3>
+          <ul style="color:var(--texto-secundario);font-size:14px;line-height:1.8;padding-left:16px">
+            <li>Crear nuevos usuarios.</li>
+            <li>Suspender / reactivar cuentas.</li>
+            <li>Eliminar usuarios (excepto Evancito).</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Confirmación de eliminar -->
+  <div id="modal-confirmar-del" class="modal-overlay" style="display:none" onclick="cerrarModalConfirmar(event)">
+    <div class="modal-card" style="max-width:380px" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>¿Eliminar usuario?</h3>
+      </div>
+      <p style="color:var(--texto-secundario);margin-bottom:8px">
+        Esta acción eliminará el usuario y todo su contenido. Es irreversible.
+      </p>
+      <p id="confirmar-usuario-nombre" style="font-weight:700;font-size:16px;margin-bottom:4px"></p>
+      <div class="modal-footer">
+        <button class="btn-secundario" onclick="cerrarModalConfirmar()">Cancelar</button>
+        <button class="btn-peligro" id="btn-confirmar-del-usuario" onclick="ejecutarEliminarUsuario()">
+          Sí, eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/admin.js"></script>
+</body>
+</html>
