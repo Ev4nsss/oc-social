@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OC Social — Iniciar sesión</title>
+  <!-- Solo usamos style.css, que ya incluye los estilos del login -->
   <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/login.css" />
 </head>
 <body data-pagina="login">
 
@@ -14,7 +14,6 @@
     <div class="login-ilustracion" aria-hidden="true">
       <div class="logo-grande">
         <svg viewBox="0 0 80 80" width="80" height="80" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Ícono personalizable: silueta estilizada de dos personas -->
           <circle cx="28" cy="22" r="14" fill="var(--azul)"/>
           <circle cx="52" cy="22" r="14" fill="var(--azul-claro)"/>
           <ellipse cx="28" cy="58" rx="22" ry="14" fill="var(--azul)"/>
@@ -95,9 +94,9 @@
   <script>
     // Handlers específicos del login
     function submitLogin() {
-      // Simular submit del form
       const nombre = document.getElementById("input-nombre").value.trim();
-      const contraseña = document.getElementById("input-pass").value;
+      // ¡Corregido! Ahora la contraseña también se limpia de espacios
+      const contraseña = document.getElementById("input-pass").value.trim();
       const btnLogin = document.getElementById("btn-login");
       const errorDiv = document.getElementById("login-error");
 
